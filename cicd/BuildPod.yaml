@@ -5,11 +5,25 @@ metadata:
     app: jenkins-ephemeral
 spec:
   serviceAccountName: jenkinsci
-  volumes: 
-  - name: docker-sock
-    hostPath:
-      path: /var/run/docker.sock
+  volumes:
+  - name: docker-secret
+    projected:
+      sources:
+      - secret:
+        name: googlecloud-cr
+        items:
+        - key: .dockerconfigjson
+          path: config.json
   containers:
+  - name: kaniko
+    image: gcr.io/kaniko-project/executor:debug-v0.15.0
+    imagePullPolicy: Always
+    command:
+    - /busybox/cat
+    tty: true
+    volumeMounts:
+    - name: docker-credentials
+      mountPath: /kaniko/.docker
   - name: ace
     image: ibmcom/ace
     command: 
