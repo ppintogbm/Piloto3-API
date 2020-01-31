@@ -1,0 +1,29 @@
+pipeline{
+	agent {
+		kubernetes{
+			cloud "${cloudName}"
+			label "backend-build"
+			yamlFile "BuildPod.yaml"
+		}
+  }
+	parameters{
+		string(name: "cloudName", description: "Cloud Name")
+		
+	}
+	stages{
+		stage('Prepare'){
+			steps{
+				script{
+					tag = sh(script: 'git rev-parse --short HEAD', returnStdout: true).trim()
+				}
+			}
+		}
+		stage('Build Bars'){
+			steps{
+				container('ace'){
+					sh "bash -c 'mqsipackagebar -a compiled.bar -w . -k ApiCalculadora'"
+				}
+			}
+   	}
+	}
+}
