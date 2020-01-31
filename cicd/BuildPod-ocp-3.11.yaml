@@ -10,9 +10,9 @@ spec:
     projected:
       sources:
       - secret:
-        name: ibmcloud-cr
+        name: jenkinsci-dockercfg-b9rcx
         items:
-        - key: .dockerconfigjson
+        - key: .dockercfg
           path: config.json
   containers:
   - name: kaniko
