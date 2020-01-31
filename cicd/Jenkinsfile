@@ -3,12 +3,13 @@ pipeline{
 		kubernetes{
 			cloud "${cloudName}"
 			label "backend-build"
-			yamlFile "BuildPod.yaml"
+			yamlFile "cicd/${buildPodFile}"
 		}
   }
 	parameters{
-		string(name: "cloudName", description: "Cloud Name")
-		
+		string(name: "cloudName", description: "Cloud Name.")
+		string(name: "buildPodFile", description: "Build Pod yaml file name.")
+
 	}
 	stages{
 		stage('Prepare'){
