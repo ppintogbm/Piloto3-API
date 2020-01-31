@@ -10,6 +10,7 @@ pipeline{
 		string(name: "cloudName", description: "Cloud Name.")
 		string(name: "buildPodFile", description: "Build Pod yaml file name.", defaultValue: "BuildPod.yaml")
 		string(name: "imageRepository", description: "Container image repository")
+		string(name: "kanikoFlags", description: "Additional flags for kaniko executor")
 	}
 	stages{
 		stage('Prepare'){
@@ -35,7 +36,7 @@ pipeline{
 				container('kaniko'){
 					sh '''#!/busybox/sh
 								echo "Building $DESTINATION"
-								executor --dockerfile=Dockerfile --context="." --destination=$DESTINATION
+								executor --dockerfile=Dockerfile --context="." --destination=$DESTINATION ${kanikoFlags}
 						 '''
 				}
 			}
