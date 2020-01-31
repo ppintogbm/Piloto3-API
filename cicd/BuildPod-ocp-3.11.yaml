@@ -6,7 +6,7 @@ metadata:
 spec:
   serviceAccountName: jenkinsci
   volumes:
-  - name: docker-secret
+  - name: docker-credentials
     projected:
       sources:
       - secret:
