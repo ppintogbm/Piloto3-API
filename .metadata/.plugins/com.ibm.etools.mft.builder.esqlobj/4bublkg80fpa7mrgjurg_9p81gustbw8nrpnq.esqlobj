@@ -1,0 +1,9 @@
+/*EATE FUNCTION Main() RETURNS BOOLE*/
+	BEGIN
+		------------------------------------------------		
+		SET OutputRoot = InputRoot;
+		SET OutputRoot.JSON.Data = NULL;
+		SET OutputRoot.JSON.Data.resultado = 'Revise la data enviada, no es posible realizar la operacion solicitada';	
+		------------------------------------------------
+		RETURN TRUE;
+	END;
