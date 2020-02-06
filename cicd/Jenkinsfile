@@ -51,7 +51,7 @@ pipeline{
 				container('helm'){
 					sh '''#!/bin/sh
 								/helm init --client-only
-								/helm upgrade api charts/api --namespace default --install --set image.repository=$REPOSITORY,image.tag=$TAG
+								/helm upgrade api charts/calculadora-api --namespace default --install --set image.repository=$REPOSITORY,image.tag=$TAG
 						 '''
 				}
 			}
