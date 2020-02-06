@@ -9,11 +9,11 @@ spec:
   - name: docker-credentials
     projected:
       sources:
-      - secret:
-        name: ibmcloud-cr
-        items:
-        - key: .dockerconfigjson
-          path: config.json
+      - secret: 
+          name: ibmcloud-cr
+          items:
+          - key: .dockerconfigjson
+            path: config.json
   containers:
   - name: kaniko
     image: gcr.io/kaniko-project/executor:debug-v0.15.0
@@ -24,6 +24,13 @@ spec:
     volumeMounts:
     - name: docker-credentials
       mountPath: /kaniko/.docker
+    resources:
+      requests:
+        cpu: "500m"
+        memory: "512Mi"
+      limits:
+        cpu: "2000m"
+        memory: "2048Mi" 
   - name: ace
     image: ibmcom/ace
     command: 
