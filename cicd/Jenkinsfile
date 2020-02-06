@@ -52,6 +52,7 @@ pipeline{
 					sh '''#!/bin/sh
 								/helm init --client-only
 								/helm upgrade api charts/api --namespace default --install --set image.repository=$REPOSITORY,image.tag=$TAG
+						 '''
 				}
 			}
 		}
