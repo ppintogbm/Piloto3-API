@@ -33,12 +33,12 @@ spec:
             {{- toYaml .Values.ports | nindent 12 }}
           livenessProbe:
             httpGet:
-              path: /
-              port: admin-http
+              path:  /calculadora/v1/swagger.json
+              port: http
           readinessProbe:
             httpGet:
-              path: /
-              port: admin-http
+              path: /calculadora/v1/swagger.json
+              port: http
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
           env:
