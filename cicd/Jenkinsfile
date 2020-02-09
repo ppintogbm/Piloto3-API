@@ -7,7 +7,11 @@ pipeline{
 		}
   }
 	parameters{
-		string(name: "cloudName", description: "Cloud Name.")
+		choice(
+			choices: ['kubernetes','openshift']
+			description: 'Cloud Name'
+			name: 'cloudName'
+		)
 		string(name: "buildPodFile", description: "Build Pod yaml file name.", defaultValue: "BuildPod.yaml")
 		string(name: "imageRepository", description: "Container image repository")
 		string(name: "kanikoFlags", description: "Additional flags for kaniko executor")
@@ -47,11 +51,14 @@ pipeline{
 				REPOSITORY="${imageRepository}"
 				TAG="${tag}"
 			}
+			when{
+				expression{params.cloudName == 'kubernetes'}
+			}
 			steps{
 				container('helm'){
 					sh '''#!/bin/sh
 								/helm init --client-only
-								/helm upgrade api charts/calculadora-api --namespace default --install --set image.repository=$REPOSITORY,image.tag=$TAG
+								/helm upgrade api charts/calculadora-api --namespace default --install --set image.repository=$REPOSITORY,image.tag=$TAG,service.type=NodePort,ingress.enabled=true,ingress.hosts[0].paths[0]='/calculadora/v1/'
 						 '''
 				}
 			}

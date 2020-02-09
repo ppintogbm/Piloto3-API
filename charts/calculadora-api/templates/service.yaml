@@ -7,12 +7,22 @@ metadata:
 spec:
   type: {{ .Values.service.type }}
   ports:
-    {{- range .Values.service.ports }}
-      - name: {{ .name }}
-        targetPort: {{ .name }}
-        protocol: {{ .protocol }}
-        port: {{ .port }}
-    {{- end}}
+    - name: http
+      targetPort: http
+      protocol: TCP
+      port: {{ default  .Values.service.port 7800 }}
+    - name: https
+      targetPort: https
+      protocol: TCP
+      port: {{ default .Values.service.securePort 7843 }}
+    - name: admin-http
+      targetPort: admin-http
+      protocol: TCP
+      port: {{ default .Values.service.adminPort 7600 }}
+    - name: 9483-tcp
+      targetPort: 9483-tcp
+      protocol: TCP
+      port: 9483
   selector:
     app.kubernetes.io/name: {{ include "calculadora-api.name" . }}
     app.kubernetes.io/instance: {{ .Release.Name }}
