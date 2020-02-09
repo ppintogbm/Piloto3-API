@@ -8,8 +8,8 @@ pipeline{
   }
 	parameters{
 		choice(
-			choices: ['kubernetes','openshift']
-			description: 'Cloud Name'
+			choices: ['kubernetes','openshift'],
+			description: 'Cloud Name',
 			name: 'cloudName'
 		)
 		string(name: "buildPodFile", description: "Build Pod yaml file name.", defaultValue: "BuildPod.yaml")
