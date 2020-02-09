@@ -34,11 +34,11 @@ spec:
           livenessProbe:
             httpGet:
               path: /
-              port: http
+              port: admin-http
           readinessProbe:
             httpGet:
               path: /
-              port: http
+              port: admin-http
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
           env:
