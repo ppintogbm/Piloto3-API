@@ -65,7 +65,7 @@ pipeline{
 				container('buildah'){
 					sh '''#!/bin/bash
 								echo "Building $DESTINATION"
-								image=$(buildah bud -f Dockerfile API/)
+								image=$(buildah bud -f Dockerfile `pwd`)
 								buildah push $image docker://$DESTINATION:$TAG
 								buildah push $image docker://$DESTINATION:latest
 						 '''
