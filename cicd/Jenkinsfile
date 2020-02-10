@@ -66,6 +66,7 @@ pipeline{
 					sh '''#!/bin/bash
 								echo "Building $DESTINATION"
 								image=$(buildah bud -f Dockerfile `pwd`)
+								chown $(id -un):$(id -gn) compiled.bar
 								buildah push $image docker://$DESTINATION:$TAG
 								buildah push $image docker://$DESTINATION:latest
 						 '''
