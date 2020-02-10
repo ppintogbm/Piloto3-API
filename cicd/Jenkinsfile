@@ -58,7 +58,7 @@ pipeline{
 				container('helm'){
 					sh '''#!/bin/sh
 								/helm init --client-only
-								/helm upgrade api charts/calculadora-api --namespace default --install --set image.repository=$REPOSITORY,image.tag=$TAG,service.type=NodePort,ingress.enabled=true,ingress.hosts[0].host=api.example.com,ingress.hosts[0].paths[0]='/calculadora/v1/'
+								/helm upgrade api charts/calculadora-api --namespace default --install --set image.repository=$REPOSITORY,image.tag=$TAG,service.type=NodePort
 						 '''
 				}
 			}
