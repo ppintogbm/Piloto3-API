@@ -35,17 +35,39 @@ pipeline{
 				}
 			}
    	}
-		stage('Build Image'){
+		stage('Build Image with Kaniko'){
 			environment{
 				PATH="/busybox:/kaniko:$PATH"
 				DESTINATION="${imageRepository}"
 				TAG="${tag}"
+			}
+			when{
+				expression{params.buildPodFile == 'BuildPod-kaniko.yaml'}
 			}
 			steps{
 				container('kaniko'){
 					sh '''#!/busybox/sh
 								echo "Building $DESTINATION"
 								/kaniko/executor --dockerfile=Dockerfile --context="dir://`pwd`"  ${kanikoFlags} --destination="$DESTINATION:$TAG" --destination="$DESTINATION:latest"
+						 '''
+				}
+			}
+		}
+		stage('Build Image with buildah'){
+			environment{
+				DESTINATION="${imageRepository}"
+				TAG="${tag}"
+			}
+			when{
+				expression{params.buildPodFile == 'BuildPod-buildah.yaml'}
+			}
+			steps{
+				container('buildah'){
+					sh '''#!/bin/bash
+								echo "Building $DESTINATION"
+								image=$(buildah bud -f Dockerfile API/)
+								buildah push $image docker://$DESTINATION:$TAG
+								buildah push $image docker://$DESTINATION:latest
 						 '''
 				}
 			}
