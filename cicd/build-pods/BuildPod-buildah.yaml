@@ -43,7 +43,9 @@ spec:
           memory: "512Mi"
         limits:
           cpu: "2000m"
-          memory: "2048Mi" 
+          memory: "2048Mi"
+      securityContext:
+          privileged: true
     - name: ace
       image: ibmcom/ace
       command: 
