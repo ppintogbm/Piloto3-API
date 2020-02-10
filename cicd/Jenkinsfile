@@ -3,7 +3,7 @@ pipeline{
 		kubernetes{
 			cloud "${cloudName}"
 			label "backend-build"
-			yamlFile "cicd/${buildPodFile}"
+			yamlFile "cicd/build-pods/${buildPodFile}"
 		}
   }
 	parameters{
@@ -12,7 +12,12 @@ pipeline{
 			description: 'Cloud Name',
 			name: 'cloudName'
 		)
-		string(name: "buildPodFile", description: "Build Pod yaml file name.", defaultValue: "BuildPod.yaml")
+		choice(
+			choices: ['BuildPod-kaniko.yaml','BuildPod-buildah.yaml','BuildPod-docker.yaml'],
+			description: 'Build Pod definition file.',
+			name: 'buildPodFile',
+			defaultValue: 'BuildPod-kaniko.yaml'
+		)
 		string(name: "imageRepository", description: "Container image repository")
 		string(name: "kanikoFlags", description: "Additional flags for kaniko executor")
 	}
