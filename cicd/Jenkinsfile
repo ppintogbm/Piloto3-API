@@ -15,8 +15,7 @@ pipeline{
 		choice(
 			choices: ['BuildPod-kaniko.yaml','BuildPod-buildah.yaml','BuildPod-docker.yaml'],
 			description: 'Build Pod definition file.',
-			name: 'buildPodFile',
-			default: 'BuildPod-kaniko.yaml'
+			name: 'buildPodFile'
 		)
 		string(name: "imageRepository", description: "Container image repository")
 		string(name: "kanikoFlags", description: "Additional flags for kaniko executor")
