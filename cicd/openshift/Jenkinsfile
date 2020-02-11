@@ -11,14 +11,14 @@ metadata:
     app: jenkins-ephemeral
 spec:
   volumes:
-  - name: docker-credentials
-    projected:
-      sources:
-      - secret: 
-        name: ${jenkinsDockerSecret}
-        items:
-        - key: .dockercfg
-          path: config.json 
+    - name: docker-credentials
+      projected:
+        sources:
+        - secret: 
+            name: ${jenkinsDockerSecret}
+            items:
+              - key: .dockercfg
+                path: config.json 
   containers:
     - name: origin
       image: openshift/origin-cli
