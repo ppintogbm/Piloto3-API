@@ -50,6 +50,7 @@ pipeline{
 									/kaniko/executor --dockerfile=Dockerfile --context="dir://`pwd`"  --destination="$DESTINATION:$TAG" --destination="$DESTINATION:latest"
 								else
 									/kaniko/executor --dockerfile=Dockerfile --context="dir://`pwd`"  --destination="$DESTINATION:$TAG" --destination="$DESTINATION:latest" --no-push
+								fi
 						 '''
 				}
 			}
