@@ -1,9 +1,9 @@
 pipeline{
 	agent {
 		kubernetes{
-			cloud "${cloudName}"
+			cloud "${params.cloudName}"
 			label "backend-build"
-			yamlFile "cicd/build-pods/${buildPodFile}"
+			yamlFile "cicd/build-pods/BuildPod-kaniko.yaml"
 		}
   }
 	parameters{
@@ -12,13 +12,13 @@ pipeline{
 			description: 'Cloud Name',
 			name: 'cloudName'
 		)
-		choice(
+/*		choice(
 			choices: ['BuildPod-kaniko.yaml','BuildPod-buildah.yaml','BuildPod-docker.yaml'],
 			description: 'Build Pod definition file.',
 			name: 'buildPodFile'
 		)
+*/
 		string(name: "imageRepository", description: "Container image repository")
-		string(name: "kanikoFlags", description: "Additional flags for kaniko executor")
 	}
 	stages{
 		stage('Prepare'){
@@ -38,8 +38,9 @@ pipeline{
 		stage('Build Image with Kaniko'){
 			environment{
 				PATH="/busybox:/kaniko:$PATH"
-				DESTINATION="${imageRepository}"
+				DESTINATION="${params.imageRepository}"
 				TAG="${tag}"
+				CLOUD="${params.cloudName}"
 			}
 			when{
 				expression{params.buildPodFile == 'BuildPod-kaniko.yaml'}
@@ -48,34 +49,17 @@ pipeline{
 				container('kaniko'){
 					sh '''#!/busybox/sh
 								echo "Building $DESTINATION"
-								/kaniko/executor --dockerfile=Dockerfile --context="dir://`pwd`"  ${kanikoFlags} --destination="$DESTINATION:$TAG" --destination="$DESTINATION:latest"
+								if [ $CLOUD -eq "kubernetes" ]; then
+									/kaniko/executor --dockerfile=Dockerfile --context="dir://`pwd`"  --destination="$DESTINATION:$TAG" --destination="$DESTINATION:latest"
+								else
+									/kaniko/executor --dockerfile=Dockerfile --context="dir://`pwd`"  --destination="$DESTINATION:$TAG" --destination="$DESTINATION:latest" --no-push
 						 '''
 				}
 			}
 		}
-		stage('Build Image with buildah'){
+		stage('Deploy Image on Kubernetes'){
 			environment{
-				DESTINATION="${imageRepository}"
-				TAG="${tag}"
-			}
-			when{
-				expression{params.buildPodFile == 'BuildPod-buildah.yaml'}
-			}
-			steps{
-				container('buildah'){
-					sh '''#!/bin/bash
-								echo "Building $DESTINATION"
-								image=$(buildah bud -f Dockerfile `pwd`)
-								chown $(id -un):$(id -gn) compiled.bar
-								buildah push $image docker://$DESTINATION:$TAG
-								buildah push $image docker://$DESTINATION:latest
-						 '''
-				}
-			}
-		}
-		stage('Deploy Image'){
-			environment{
-				REPOSITORY="${imageRepository}"
+				REPOSITORY="${params.imageRepository}"
 				TAG="${tag}"
 			}
 			when{
@@ -90,5 +74,31 @@ pipeline{
 				}
 			}
 		}
+/*
+		stage('Deploy Image on Openshift'){
+			environment{
+				REPOSITORY="${params.imageRepository}"
+				TAG="${tag}"
+			}
+			when{
+				expression{params.cloudName == 'openshift'}
+			}
+			steps{
+				container('origin'){
+					openshift.withCluster(){
+						openshift.withProject(){
+							def deployment = openshift.selector('dc',[template: 'calculadora-api', app: 'api'])
+							if(!deployment.exists()){
+								def model = openshift.process('-f','oc/template.yaml')
+								openshift.apply(model)
+								deployment = openshift.selector('dc',[template: 'calculadora-api', app: 'api'])
+							}
+							
+						}
+					}
+				}
+			}
+		}
+*/
 	}
 }

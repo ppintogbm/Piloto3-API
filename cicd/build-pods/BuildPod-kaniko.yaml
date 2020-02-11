@@ -4,7 +4,6 @@ metadata:
   labels: 
     app: jenkins-ephemeral
 spec:
-  serviceAccountName: jenkinsci
   volumes:
     - name: docker-credentials
       projected:
@@ -15,6 +14,18 @@ spec:
             - key: .dockerconfigjson
               path: config.json
   containers:
+    - name: origin
+      image: openshift/origin-cli
+      command:
+        - cat
+      tty: true
+      resources:
+          requests:
+            cpu: "100m"
+            memory: "32Mi"
+          limits:
+            cpu: "1000m"
+            memory: "512Mi"
     - name: helm
       image: ibmcom/helm:v2.6.0
       imagePullPolicy: Always
@@ -23,7 +34,7 @@ spec:
       tty: true
       resources:
           requests: 
-            cpu: "500m"
+            cpu: "100m"
             memory: "128Mi"
           limits:
             cpu: "1000m"
