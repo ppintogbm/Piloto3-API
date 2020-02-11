@@ -54,7 +54,7 @@ pipeline{
 											{
 												"auths": {
 													"http://docker-registry.svc.default.cluster.local:5000": {
-													"auth": "$(echo -n 'openshift:$TOKEN | base64 --encode)"
+													"auth": "$(echo -n openshift:$TOKEN | base64 --encode)"
 													}
 												}
 											}
