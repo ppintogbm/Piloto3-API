@@ -42,9 +42,6 @@ pipeline{
 				TAG="${tag}"
 				CLOUD="${params.cloudName}"
 			}
-			when{
-				expression{params.buildPodFile == 'BuildPod-kaniko.yaml'}
-			}
 			steps{
 				container('kaniko'){
 					sh '''#!/busybox/sh
