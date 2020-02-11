@@ -49,7 +49,7 @@ pipeline{
 								if [ $CLOUD -eq "kubernetes" ]; then
 									/kaniko/executor --dockerfile=Dockerfile --context="dir://`pwd`"  --destination="$DESTINATION:$TAG" --destination="$DESTINATION:latest"
 								else
-									/kaniko/executor --dockerfile=Dockerfile --context="dir://`pwd`"  --destination="$DESTINATION:$TAG" --destination="$DESTINATION:latest" --insecure-registry
+									/kaniko/executor --dockerfile=Dockerfile --context="dir://`pwd`"  --destination="$DESTINATION:$TAG" --destination="$DESTINATION:latest" --insecure
 								fi
 						 '''
 				}
