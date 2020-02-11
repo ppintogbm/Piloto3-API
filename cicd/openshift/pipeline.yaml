@@ -16,5 +16,5 @@ spec:
       - name: imageRepository
         value: docker-registry.default.svc.cluster.local:5000/piloto3/api
       - name: jenkinsDockerSecret
-        value: jenkins-dockercfg-sd2m2
+        value: jenkins-dockercfg-lxlss
     type: JenkinsPipeline
