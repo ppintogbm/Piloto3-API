@@ -120,7 +120,7 @@ spec:
 				container('kaniko'){
 					sh '''#!/busybox/sh
 								echo "Building $DESTINATION"
-								/kaniko/executor --dockerfile=Dockerfile --context="dir://`pwd`" --destination="$DESTINATION:$TAG" --destination="$DESTINATION:latest" --insecure --debug
+								/kaniko/executor --dockerfile=Dockerfile --context="dir://`pwd`" --destination="$DESTINATION:$TAG" --destination="$DESTINATION:latest" --insecure
 						 '''
 				}
 			}
