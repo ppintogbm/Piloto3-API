@@ -4,15 +4,6 @@ metadata:
   labels: 
     app: jenkins-ephemeral
 spec:
-  volumes:
-    - name: docker-credentials
-      projected:
-        sources:
-        - secret: 
-            name: ibmcloud-cr
-            items:
-            - key: .dockerconfigjson
-              path: config.json
   containers:
     - name: origin
       image: openshift/origin-cli
@@ -45,9 +36,6 @@ spec:
       command:
       - /busybox/cat
       tty: true
-      volumeMounts:
-      - name: docker-credentials
-        mountPath: /kaniko/.docker
       resources:
         requests:
           cpu: "500m"
