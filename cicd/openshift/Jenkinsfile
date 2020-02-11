@@ -14,11 +14,11 @@ spec:
   - name: docker-credentials
     projected:
       sources:
-      - secret: ${jenkinsDockerSecret}
-        name: 
-        items:
-        - key: .dockercfg
-          path: config.json
+      - secret: 
+          name: ${jenkinsDockerSecret}
+          items:
+            - key: .dockercfg
+              path: config.json 
   containers:
     - name: origin
       image: openshift/origin-cli
