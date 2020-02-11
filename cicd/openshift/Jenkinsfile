@@ -15,10 +15,10 @@ spec:
     projected:
       sources:
       - secret: 
-          name: ${jenkinsDockerSecret}
-          items:
-            - key: .dockercfg
-              path: config.json 
+        name: ${jenkinsDockerSecret}
+        items:
+        - key: .dockercfg
+          path: config.json 
   containers:
     - name: origin
       image: openshift/origin-cli
