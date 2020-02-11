@@ -4,6 +4,15 @@ metadata:
   labels: 
     app: jenkins-ephemeral
 spec:
+  volumes:
+  - name: docker-credentials
+    projected:
+      sources:
+      - secret:
+        name: registry-secret
+        items:
+        - key: config.json
+          path: config.json
   containers:
     - name: origin
       image: openshift/origin-cli
@@ -11,12 +20,12 @@ spec:
         - cat
       tty: true
       resources:
-          requests:
-            cpu: "100m"
-            memory: "32Mi"
-          limits:
-            cpu: "1000m"
-            memory: "512Mi"
+        requests:
+          cpu: "100m"
+          memory: "32Mi"
+        limits:
+          cpu: "1000m"
+          memory: "512Mi"
     - name: helm
       image: ibmcom/helm:v2.6.0
       imagePullPolicy: Always
@@ -24,17 +33,17 @@ spec:
         - cat
       tty: true
       resources:
-          requests: 
-            cpu: "100m"
-            memory: "128Mi"
-          limits:
-            cpu: "1000m"
-            memory: "512Mi"
+        requests: 
+          cpu: "100m"
+          memory: "128Mi"
+        limits:
+          cpu: "1000m"
+          memory: "512Mi"
     - name: kaniko
       image: gcr.io/kaniko-project/executor:debug-v0.15.0
       imagePullPolicy: Always
       command:
-      - /busybox/cat
+        - /busybox/cat
       tty: true
       resources:
         requests:
@@ -42,14 +51,17 @@ spec:
           memory: "512Mi"
         limits:
           cpu: "2000m"
-          memory: "2048Mi" 
+          memory: "2048Mi"
+      volumeMounts:
+        - name: docker-credentials
+          mountPath: /kaniko/.docker
     - name: ace
       image: ibmcom/ace
       command: 
-      - "/bin/bash"
-      - "-c"
+        - "/bin/bash"
+        - "-c"
       args: 
-      - cat
+        - cat
       tty: true
       resources:
         requests:
@@ -59,8 +71,8 @@ spec:
           memory: "2048Mi"
           cpu:  "2000m"
       env:
-      - name: LICENSE
-        value: "accept"
+        - name: LICENSE
+          value: "accept"
       securityContext:
         allowPrivilegeEscalation: false
         readOnlyRootFilesystem: false
