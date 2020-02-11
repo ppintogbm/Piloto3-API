@@ -104,7 +104,7 @@ spec:
 		}
   }
 	parameters{
-		string(name: "imageRepository", description: "Container image repository", default: "docker-registry.svc.default.cluster.local:5000/piloto3/api")
+		string(name: "imageRepository", description: "Container image repository", defaultValue: "docker-registry.svc.default.cluster.local:5000/piloto3/api")
 		string(name: "jenkinsDockerSecret", description: "Jenkins Dockercfg Secret")
 	}
 	stages{

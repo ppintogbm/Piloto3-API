@@ -1,0 +1,20 @@
+apiVersion: build.openshift.io/v1
+kind: BuildConfig
+metadata:
+  name: api-pipeline
+spec:
+  runPolicy: Serial
+  source:
+    type: Git
+    git:
+      uri: https://github.com/ppintogbm/Piloto3-API.git
+      ref: Dev
+  strategy:
+    jenkinsPipelineStrategy:
+      jenkinsfilePath: cicd/openshift/Jenkinsfile
+      env:
+      - name: imageRepository
+        value: docker-registry.svc.default.cluster.local:5000/piloto3/api
+      - name: jenkinsDockerSecret
+        value: jenkins-dockercfg-sd2m2
+    type: JenkinsPipeline
