@@ -1,0 +1,168 @@
+pipeline{
+	agent {
+		kubernetes{
+			cloud "openshift"
+			label "backend-build"
+			yaml """
+apiVersion: v1
+kind: Pod
+metadata:
+  labels: 
+    app: jenkins-ephemeral
+spec:
+  volumes:
+  - name: docker-credentials
+    projected:
+      sources:
+      - secret: ${jenkinsDockerSecret}
+        name: 
+        items:
+        - key: .dockercfg
+          path: config.json
+  containers:
+    - name: origin
+      image: openshift/origin-cli
+      command:
+        - cat
+      tty: true
+      resources:
+        requests:
+          cpu: "100m"
+          memory: "32Mi"
+        limits:
+          cpu: "1000m"
+          memory: "512Mi"
+    - name: helm
+      image: ibmcom/helm:v2.6.0
+      imagePullPolicy: Always
+      command:
+        - cat
+      tty: true
+      resources:
+        requests: 
+          cpu: "100m"
+          memory: "128Mi"
+        limits:
+          cpu: "1000m"
+          memory: "512Mi"
+    - name: kaniko
+      image: gcr.io/kaniko-project/executor:debug-v0.15.0
+      imagePullPolicy: Always
+      command:
+        - /busybox/cat
+      tty: true
+      resources:
+        requests:
+          cpu: "500m"
+          memory: "512Mi"
+        limits:
+          cpu: "2000m"
+          memory: "2048Mi"
+      volumeMounts:
+        - name: docker-credentials
+          mountPath: /kaniko/.docker
+    - name: ace
+      image: ibmcom/ace
+      command: 
+        - "/bin/bash"
+        - "-c"
+      args: 
+        - cat
+      tty: true
+      resources:
+        requests:
+          memory: "512Mi"
+          cpu: "500m"
+        limits:
+          memory: "2048Mi"
+          cpu:  "2000m"
+      env:
+        - name: LICENSE
+          value: "accept"
+      securityContext:
+        allowPrivilegeEscalation: false
+        readOnlyRootFilesystem: false
+        runAsNonRoot: true
+        runAsUser: 1000
+        privileged: false
+        capabilities:
+          add:
+          - SETPCAP
+          - AUDIT_WRITE
+          - CHOWN
+          - NET_RAW
+          - DAC_OVERRIDE
+          - FOWNER
+          - FSETID
+          - KILL
+          - SETUID
+          - SETGID
+          - NET_BIND_SERVICE
+          - SYS_CHROOT
+          - SETFCAP
+			"""
+		}
+  }
+	parameters{
+		string(name: "imageRepository", description: "Container image repository", default: "docker-registry.svc.default.cluster.local:5000/piloto3/api")
+		string(name: "jenkinsDockerSecret", description: "Jenkins Dockercfg Secret")
+	}
+	stages{
+		stage('Prepare'){
+			steps{
+				script{
+					tag = sh(script: 'git rev-parse --short HEAD', returnStdout: true).trim()
+				}
+			}
+		}
+		stage('Build Bars'){
+			steps{
+				container('ace'){
+					sh "bash -c 'mqsipackagebar -a compiled.bar -w . -k ApiCalculadora'"
+				}
+			}
+   	}
+		stage('Build Image with Kaniko'){
+			environment{
+				PATH="/busybox:/kaniko:$PATH"
+				DESTINATION="${params.imageRepository}"
+				TAG="${tag}"
+				CLOUD="${params.cloudName}"
+			}
+			steps{
+				container('kaniko'){
+					sh '''#!/busybox/sh
+								echo "Building $DESTINATION"
+								/kaniko/executor --dockerfile=Dockerfile --context="dir://`pwd`"  --destination="$DESTINATION:$TAG" --destination="$DESTINATION:latest" --insecure
+						 '''
+				}
+			}
+		}
+/*
+		stage('Deploy Image on Openshift'){
+			environment{
+				REPOSITORY="${params.imageRepository}"
+				TAG="${tag}"
+			}
+			when{
+				expression{params.cloudName == 'openshift'}
+			}
+			steps{
+				container('origin'){
+					openshift.withCluster(){
+						openshift.withProject(){
+							def deployment = openshift.selector('dc',[template: 'calculadora-api', app: 'api'])
+							if(!deployment.exists()){
+								def model = openshift.process('-f','oc/template.yaml')
+								openshift.apply(model)
+								deployment = openshift.selector('dc',[template: 'calculadora-api', app: 'api'])
+							}
+							
+						}
+					}
+				}
+			}
+		}
+*/
+	}
+}
