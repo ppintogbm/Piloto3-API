@@ -10,15 +10,6 @@ metadata:
   labels: 
     app: jenkins-ephemeral
 spec:
-  volumes:
-    - name: docker-credentials
-      projected:
-        sources:
-        - secret: 
-            name: ${jenkinsDockerSecret}
-            items:
-              - key: .dockercfg
-                path: config.json 
   containers:
     - name: origin
       image: openshift/origin-cli
@@ -58,9 +49,6 @@ spec:
         limits:
           cpu: "2000m"
           memory: "2048Mi"
-      volumeMounts:
-        - name: docker-credentials
-          mountPath: /kaniko/.docker
     - name: ace
       image: ibmcom/ace
       command: 
