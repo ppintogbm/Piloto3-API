@@ -91,7 +91,7 @@ spec:
 		}
   }
 	parameters{
-		string(name: "imageRepository", description: "Container image repository", defaultValue: "docker-registry.svc.default.cluster.local:5000/piloto3/api")
+		string(name: "imageRepository", description: "Container image repository", defaultValue: "docker-registry.default.svc.cluster.local:5000/piloto3/api")
 		string(name: "jenkinsDockerSecret", description: "Jenkins Dockercfg Secret")
 	}
 	stages{
@@ -120,7 +120,7 @@ spec:
 				container('kaniko'){
 					sh '''#!/busybox/sh
 								echo "Building $DESTINATION"
-								/kaniko/executor --dockerfile=Dockerfile --context="dir://`pwd`"  --destination="$DESTINATION:$TAG" --destination="$DESTINATION:latest" --insecure
+								/kaniko/executor --dockerfile=Dockerfile --context="dir://`pwd`" --destination="$DESTINATION:$TAG" --destination="$DESTINATION:latest" --insecure --debug
 						 '''
 				}
 			}
