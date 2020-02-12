@@ -138,9 +138,6 @@ spec:
 				REPOSITORY="${params.imageRepository}"
 				TAG="${tag}"
 			}
-			when{
-				expression{params.cloudName == 'openshift'}
-			}
 			steps{
 				container('origin'){
           script{
