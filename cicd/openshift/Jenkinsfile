@@ -150,17 +150,6 @@ spec:
                   openshift.apply(model)
                   deployment = openshift.selector('dc',[template: 'calculadora-api', app: 'api'])
                 }
-                /*openshift.tag("${params.imageRepository}:${tag}","${params.imageRepository}:latest")
-                def latestVersion = deployment.object().status.latestVersion
-                echo "${latestVersion}"
-                def rc = openshift.selector('rc',"api-${latestVersion}")
-                timeout(time:1, unit: 'MINUTES'){
-                  rc.untilEach(1){
-                    def rcMap = it.object()
-                    return (rcMap.status.replicas.equals(rcMap.status.readyReplicas))
-                  }
-                }
-                */
               }
             }
           }
