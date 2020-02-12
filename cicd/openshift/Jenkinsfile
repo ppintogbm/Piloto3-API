@@ -152,6 +152,7 @@ spec:
                 }
                 //openshift.tag("${params.imageRepository}:${tag}","${params.imageRepository}:latest")
                 def latestVersion = deployment.object().status.latestVersion
+                echo "${latestVersion}"
                 def rc = openshift.selector('rc',"api-${latestVersion}")
                 timeout(time:1, unit: 'MINUTES'){
                   rc.untilEach(1){
