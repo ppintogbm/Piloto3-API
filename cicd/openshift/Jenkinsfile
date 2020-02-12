@@ -129,6 +129,7 @@ spec:
                 docker login -u $(whoami) -p $(cat /var/run/secrets/kubernetes.io/serviceaccount/token) $DESTINATION
 								docker build -t $DESTINATION:$TAG -t $DESTINATION:latest .
                 docker push $DESTINATION:$TAG
+                docker push $DESTINATION:latest
 						 '''
 				}
 			}
@@ -149,7 +150,7 @@ spec:
                   openshift.apply(model)
                   deployment = openshift.selector('dc',[template: 'calculadora-api', app: 'api'])
                 }
-                openshift.tag("${params.imageRepository}:${tag}","${params.imageRepository}:latest")
+                //openshift.tag("${params.imageRepository}:${tag}","${params.imageRepository}:latest")
                 def latestVersion = deployment.object().status.latestVersion
                 def rc = openshift.selector('rc',"api-${latestVersion}")
                 timeout(time:1, unit: 'MINUTES'){
