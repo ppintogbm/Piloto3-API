@@ -125,7 +125,7 @@ spec:
 				container('docker'){
 					sh '''#!/bin/sh
 								echo "Building $DESTINATION"
-                docker login -u serviceaccount -p $(cat /var/run/secrets/kubernetes.io/serviceaccount/token) $DESTINATION
+                docker login -u $(whoami) -p $(cat /var/run/secrets/kubernetes.io/serviceaccount/token) $DESTINATION
 								docker build -t $DESTINATION:$TAG -t $DESTINATION:latest .
                 docker push $DESTINATION:$TAG
 						 '''
