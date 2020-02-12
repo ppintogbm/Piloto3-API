@@ -126,7 +126,7 @@ spec:
 					sh '''#!/bin/sh
 								echo "Building $DESTINATION"
 								docker build -t $DESTINATION:$TAG -t $DESTINATION:latest .
-                docker push $DESTINATION:$TAG $DESTINATION:latest
+                docker push $DESTINATION:$TAG
 						 '''
 				}
 			}
