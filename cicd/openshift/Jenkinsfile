@@ -10,6 +10,7 @@ metadata:
   labels: 
     app: jenkins-ephemeral
 spec:
+  serviceAccount: jenkins
   volumes:
     - name: docker-credentials
       secret:
@@ -125,7 +126,7 @@ spec:
 				container('docker'){
 					sh '''#!/bin/sh
 								echo "Building $DESTINATION with user $(whoami)"
-                docker login -u $(whoami) -p $(cat /var/run/secrets/kubernetes.io/serviceaccount/token) 172.30.1.1:5000/piloto3
+                docker login -u $(whoami) -p $(cat /var/run/secrets/kubernetes.io/serviceaccount/token) $DESTINATION
 								docker build -t $DESTINATION:$TAG -t $DESTINATION:latest .
                 docker push $DESTINATION:$TAG
 						 '''
