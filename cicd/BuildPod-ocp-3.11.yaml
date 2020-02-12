@@ -10,10 +10,10 @@ spec:
     projected:
       sources:
       - secret:
-        name: jenkins-dockercfg-lxlss
-        items:
-        - key: .dockercfg
-          path: config.json
+          name: jenkins-dockercfg-lxlss
+          items:
+          - key: .dockercfg
+            path: config.json
   containers:
   - name: kaniko
     image: gcr.io/kaniko-project/executor:debug-v0.15.0
