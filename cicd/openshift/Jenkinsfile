@@ -12,13 +12,11 @@ metadata:
 spec:
   volumes:
     - name: docker-credentials
-      projected:
-        sources:
-          - secret: 
-              name: ${jenkinsDockerSecret}
-              items:
-                - key: .dockercfg
-                  path: config.json 
+      secret:
+        secretName: ${jenkinsDockerSecret}
+    - name: docker-sock
+      hostPath:
+        path: /var/run/docker.sock
   containers:
     - name: origin
       image: openshift/origin-cli
@@ -35,22 +33,27 @@ spec:
       volumeMounts:
         - name: docker-credentials
           mountPath: /.docker
-    - name: kaniko
-      image: gcr.io/kaniko-project/executor:debug-v0.15.0
+    - name: docker
+      image: docker:1.13.1
       imagePullPolicy: Always
       command:
-        - /busybox/cat
+        - cat
       tty: true
+      volumeMounts:
+        - mountPath: /var/run/docker.sock
+          name: docker-sock
+        - mountPath: /home/jenkins/.docker
+          name: docker-credentials
+      securityContext:
+        allowPrivilegeEscalation: true
+        privileged: true
       resources:
         requests:
-          cpu: "500m"
+          cpu: "100m"
           memory: "512Mi"
         limits:
           cpu: "2000m"
           memory: "2048Mi"
-      volumeMounts:
-        - name: docker-credentials
-          mountPath: /kaniko/.docker
     - name: ace
       image: ibmcom/ace
       command: 
@@ -112,18 +115,18 @@ spec:
 				}
 			}
    	}
-		stage('Build Image with Kaniko'){
+		stage('Build Image'){
 			environment{
-				PATH="/busybox:/kaniko:$PATH"
 				DESTINATION="${params.imageRepository}"
 				TAG="${tag}"
 				CLOUD="${params.cloudName}"
 			}
 			steps{
-				container('kaniko'){
-					sh '''#!/busybox/sh
+				container('docker'){
+					sh '''#!/bin/sh
 								echo "Building $DESTINATION"
-								/kaniko/executor --dockerfile=Dockerfile --context="dir://`pwd`" --destination="$DESTINATION:$TAG" --destination="$DESTINATION:latest" --insecure --verbosity debug
+								docker build -t $DESTINATION:$TAG -t $DESTINATION:latest .
+                docker push $DESTINATION:$TAG $DESTINATION:latest
 						 '''
 				}
 			}
