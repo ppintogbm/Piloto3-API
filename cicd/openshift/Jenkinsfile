@@ -133,7 +133,6 @@ spec:
 				}
 			}
 		}
-/*
 		stage('Deploy Image on Openshift'){
 			environment{
 				REPOSITORY="${params.imageRepository}"
@@ -148,16 +147,23 @@ spec:
 						openshift.withProject(){
 							def deployment = openshift.selector('dc',[template: 'calculadora-api', app: 'api'])
 							if(!deployment.exists()){
-								def model = openshift.process('-f','oc/template.yaml')
+								def model = openshift.process('-f','templates/template.yaml',"-p","NAME=api")
 								openshift.apply(model)
 								deployment = openshift.selector('dc',[template: 'calculadora-api', app: 'api'])
 							}
-							
+							oc.tag("${params.imageRepository}:${tag}","${params.imageRepository}:latest")
+              def latestVersion = deployment.object().status.latestVersion
+              def rc = openshift.selector('rc',"${app}-${latestVersion}")
+              timeout(time:1, unit: 'MINUTES'){
+                rc.untilEach(1){
+                  def rcMap = it.object()
+                  return (rcMap.status.replicas.equals(rcMap.status.readyReplicas))
+                }
+							}
 						}
 					}
 				}
 			}
 		}
-*/
 	}
 }
