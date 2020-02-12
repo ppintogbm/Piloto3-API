@@ -1,9 +1,15 @@
 FROM 	ibmcom/ace
 
 #Move bar file compiled via Jenkinsfile
-COPY --chown=1000:1000 compiled.bar bars/
-COPY --chown=1000:1000 lib/db2jcc-db2jcc4.jar .
+COPY 	compiled.bar bars/
+COPY  lib/db2jcc-db2jcc4.jar .
+COPY 	initial-config	initial-config
+
+#Change permissions from copied bar
+USER	root
+RUN	chown -R aceuser:mqbrkrs bars/; chown aceuser:mqbrkrs db2jcc-db2jcc4.jar; chown aceuser:mqbrkrs -R initial-config
 
 #Deploy compiled bar 
-USER	1000:1000
-RUN  	/bin/bash -c 'ace_compile_bars.sh'
+USER	aceuser
+RUN  	ls -la bars/ && \
+    	ace_compile_bars.sh
