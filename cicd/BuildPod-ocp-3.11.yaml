@@ -10,7 +10,7 @@ spec:
     projected:
       sources:
       - secret:
-        name: jenkinsci-dockercfg-b9rcx
+        name: jenkins-dockercfg-lxlss
         items:
         - key: .dockercfg
           path: config.json
