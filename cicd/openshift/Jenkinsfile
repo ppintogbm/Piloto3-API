@@ -149,7 +149,7 @@ spec:
                   openshift.apply(model)
                   deployment = openshift.selector('dc',[template: 'calculadora-api', app: 'api'])
                 }
-                oc.tag("${params.imageRepository}:${tag}","${params.imageRepository}:latest")
+                openshift.tag("${params.imageRepository}:${tag}","${params.imageRepository}:latest")
                 def latestVersion = deployment.object().status.latestVersion
                 def rc = openshift.selector('rc',"api-${latestVersion}")
                 timeout(time:1, unit: 'MINUTES'){
