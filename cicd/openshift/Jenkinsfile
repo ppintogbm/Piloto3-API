@@ -124,8 +124,8 @@ spec:
 			steps{
 				container('docker'){
 					sh '''#!/bin/sh
-								echo "Building $DESTINATION"
-                docker login -u $(whoami) -p $(cat /var/run/secrets/kubernetes.io/serviceaccount/token) $DESTINATION
+								echo "Building $DESTINATION with user $(whoami)"
+                docker login -u $(whoami) -p $(cat /var/run/secrets/kubernetes.io/serviceaccount/token) 172.30.1.1:5000/piloto3
 								docker build -t $DESTINATION:$TAG -t $DESTINATION:latest .
                 docker push $DESTINATION:$TAG
 						 '''
