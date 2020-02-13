@@ -48,6 +48,28 @@ objects:
             app: ${NAME}
         spec:
           serviceAccount: ${SA}
+          volumes:
+            - name: ace-policies
+              emptyDir: {}
+            - name: ace-setdbparms
+              emptyDir: {}
+          initContainers:
+            - name: prepare-configs
+              env:
+                - name: DB_PASSWORD
+                  value: "passw0rd"
+                - name: DB_SERVICE_NAME
+                  value: "db"
+                - name: DB_NAME
+                  value: "TEST"
+              image: " "
+              imagePullPolicy: "Always"
+              volumeMounts:
+                - name: ace-policies
+                  mountPath: /policy
+                - name: ace-setdbparms
+                  mountPath: /setdbparms
+              
           containers:
             - name: ace
               env:
@@ -72,6 +94,11 @@ objects:
                 exec:
                   command:
                   - chkaceready
+              volumeMounts:
+                - name: ace-policies
+                  mountPath: /home/aceuser/initial-config/policy
+                - name: ace-setdbparms
+                  mountPath: /home/aceuser/initial-config/setdbparms
               securityContext:
                 allowPrivilegeEscalation: false
                 readOnlyRootFilesystem: false
@@ -102,6 +129,15 @@ objects:
             from:
               kind: ImageStreamTag
               name: ${IMAGE}:latest
+              namespace: ${NAMESPACE}
+        - type: ImageChange
+          imageChangeParams:
+            containerNames:
+              - prepare-configs
+            automatic: true
+            from:
+              kind: ImageStreamTag
+              name: ${IMAGE}:prepare-configs
               namespace: ${NAMESPACE}
         - type: ConfigChange
   - kind: Service

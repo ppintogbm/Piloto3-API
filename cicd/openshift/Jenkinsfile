@@ -116,7 +116,7 @@ spec:
 				}
 			}
    	}
-		stage('Build Image'){
+		stage('Build Images'){
 			environment{
 				DESTINATION="${params.imageRepository}"
 				TAG="${tag}"
@@ -130,6 +130,8 @@ spec:
 								docker build -t $DESTINATION:$TAG -t $DESTINATION:latest .
                 docker push $DESTINATION:$TAG
                 docker push $DESTINATION:latest
+                docker build -t $DESTINATION:prepare-configs init/
+                docker push $DESTINATION:prepare-configs
 						 '''
 				}
 			}
