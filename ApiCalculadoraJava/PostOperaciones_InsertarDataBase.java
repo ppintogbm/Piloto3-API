@@ -25,7 +25,7 @@ public class PostOperaciones_InsertarDataBase extends MbJavaComputeNode {
 		try {
  
 			Timestamp timestamp = new Timestamp(System.currentTimeMillis());
-	        Connection conn = getJDBCType4Connection("{Policies}:DB2Policy", JDBC_TransactionType.MB_TRANSACTION_AUTO);
+	        Connection conn = getJDBCType4Connection("DB2Policy", JDBC_TransactionType.MB_TRANSACTION_AUTO);
 	        Statement stmt = conn.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);	        
 			MbElement dataElement = inMessageLocalEnvironment.getRootElement();
 	        
