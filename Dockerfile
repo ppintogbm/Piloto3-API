@@ -11,6 +11,6 @@ RUN		chown -R aceuser:mqbrkrs bars/; \
 
 #Deploy compiled bar 
 USER	aceuser
-RUN  	id -u && id -g \
+RUN  	"$(id -un):$(id -gn)\($(id -u):$(id -g)\)" &&\
 			ls -la bars/ && \
     	ace_compile_bars.sh
