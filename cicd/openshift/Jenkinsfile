@@ -52,7 +52,8 @@ pipeline{
 								mkdir -pv /kaniko/.docker
 								echo "{\\"auths\\":{\\"$REGISTRY\\":{\\"username\\":\\"openshift\\",\\"password\\":\\"$(cat /var/run/secrets/kubernetes.io/serviceaccount/token)\\"}}}" | tee /kaniko/.docker/config.json
 								echo "Building $REPOSITORY"
-								/kaniko/executor --context="dir://`pwd`" --destination=$REPOSITORY:$TAG --cache=true --cache-ttl=24h
+								/kaniko/executor --context="dir://`pwd`" --destination=$REPOSITORY:$TAG --cleanup --cache=true --cache-ttl=24h
+								/kaniko/executor --context="dir://`pwd`/init" --destination=$REPOSITORY-init:$TAG --cleanup --cache=true --cache-ttl=24h
 						'''
 				}
 			}
@@ -91,6 +92,8 @@ pipeline{
 										}
 									}
 								}
+								openshift.tag("${env.imagestream.metadata.name}:${env.tag}","${env.imagestream.metadata.name}:latest")
+								openshift.tag("${env.imagestream.metadata.name}-init:${env.tag}","${env.imagestream.metadata.name}-init:latest")
                 def latestVersion = deployment.object().status.latestVersion
                 def deploymentName = deployment.object().metadata.name
                 echo "Checking application component status: ${latestVersion}..."

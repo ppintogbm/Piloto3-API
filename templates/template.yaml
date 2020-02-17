@@ -139,10 +139,10 @@ objects:
           imageChangeParams:
             containerNames:
               - prepare-configs
-            automatic: true
+            automatic: false
             from:
               kind: ImageStreamTag
-              name: ${IMAGE}:prepare-configs
+              name: ${IMAGE}-init:latest
               namespace: ${NAMESPACE}
         - type: ConfigChange
   - kind: Service
