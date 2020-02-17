@@ -79,15 +79,15 @@ pipeline{
 										if(container.name == 'prepare-configs'){
 											dcObject.spec.template.initContainers[i].envs.each{j,env ->
 												if(env.name == 'DB_SERVICE_NAME'){
-													dcObject.spec.template.initContainers[i].envs[j].value = dbService.metadata.name
+													dcObject.spec.template.initContainers[i].envs[j].value = dbService.object().metadata.name
 												}
 												elseif(env.name == 'DB_PASSWORD'){
 													dcObject.spec.template.initContainers[i].envs[j].remove("value")
-													dcObject.spec.template.initContainers[i].envs[j].valueFrom.secretKeyRef = [name: dbService.metadata.name, key: 'password']
+													dcObject.spec.template.initContainers[i].envs[j].valueFrom.secretKeyRef = [name: dbService.object().metadata.name, key: 'password']
 												}
 												elseif(env.name == 'DB_NAME'){
 													dcObject.spec.template.initContainers[i].envs[j].remove("value")
-													dcObject.spec.template.initContainers[i].envs[j].valueFrom.configMapKeyRef = [name: dbService.metadata.name, key: 'dbname']
+													dcObject.spec.template.initContainers[i].envs[j].valueFrom.configMapKeyRef = [name: dbService.object().metadata.name, key: 'dbname']
 												}
 											}
 										}
