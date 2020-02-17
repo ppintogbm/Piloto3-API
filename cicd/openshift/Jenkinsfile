@@ -2,110 +2,34 @@ pipeline{
 	agent {
 		kubernetes{
 			cloud "openshift"
-			label "backend-build"
-			yaml """
-apiVersion: v1
-kind: Pod
-metadata:
-  labels: 
-    app: jenkins-ephemeral
-spec:
-  serviceAccount: jenkins
-  volumes:
-    - name: docker-credentials
-      secret:
-        secretName: ${jenkinsDockerSecret}
-    - name: docker-sock
-      hostPath:
-        path: /var/run/docker.sock
-  containers:
-    - name: origin
-      image: openshift/origin-cli
-      command:
-        - cat
-      tty: true
-      resources:
-        requests:
-          cpu: "100m"
-          memory: "32Mi"
-        limits:
-          cpu: "1000m"
-          memory: "512Mi"
-      volumeMounts:
-        - name: docker-credentials
-          mountPath: /.docker
-    - name: docker
-      image: docker:1.13.1
-      imagePullPolicy: Always
-      command:
-        - cat
-      tty: true
-      volumeMounts:
-        - mountPath: /var/run/docker.sock
-          name: docker-sock
-        - mountPath: /home/jenkins/.docker
-          name: docker-credentials
-      securityContext:
-        allowPrivilegeEscalation: true
-        privileged: true
-      resources:
-        requests:
-          cpu: "100m"
-          memory: "512Mi"
-        limits:
-          cpu: "2000m"
-          memory: "2048Mi"
-    - name: ace
-      image: ibmcom/ace
-      command: 
-        - "/bin/bash"
-        - "-c"
-      args: 
-        - cat
-      tty: true
-      resources:
-        requests:
-          memory: "512Mi"
-          cpu: "500m"
-        limits:
-          memory: "2048Mi"
-          cpu:  "2000m"
-      env:
-        - name: LICENSE
-          value: "accept"
-      securityContext:
-        allowPrivilegeEscalation: false
-        readOnlyRootFilesystem: false
-        runAsNonRoot: true
-        runAsUser: 1000
-        privileged: false
-        capabilities:
-          add:
-          - SETPCAP
-          - AUDIT_WRITE
-          - CHOWN
-          - NET_RAW
-          - DAC_OVERRIDE
-          - FOWNER
-          - FSETID
-          - KILL
-          - SETUID
-          - SETGID
-          - NET_BIND_SERVICE
-          - SYS_CHROOT
-          - SETFCAP
-"""
-		}
+			label "api-build"
+			yamlFile  "cicd/openshift/pod-kaniko.yaml"		
+    }
   }
 	parameters{
-		string(name: "imageRepository", description: "Container image repository", defaultValue: "docker-registry.default.svc.cluster.local:5000/piloto3/api")
-		string(name: "jenkinsDockerSecret", description: "Jenkins Dockercfg Secret")
+    string(name: "app", description: "Application Name overrides")
 	}
 	stages{
 		stage('Prepare'){
 			steps{
 				script{
-					tag = sh(script: 'git rev-parse --short HEAD', returnStdout: true).trim()
+					env.tag = sh(script: 'git rev-parse --short HEAD', returnStdout: true).trim()
+				}
+				container('origin'){
+					script{
+						openshift.withCluster(){
+							openshift.withProject(){
+								def imagestream = openshift.selector("imagestream/${params.app}-api")
+								if(!imagestream.exists()){
+									imagestream = openshift.apply([apiVersion: 'v1',kind: 'ImageStream', metadata: [name: "${params.app}-api", labels: [app: "${params.app}" ]]])
+								}
+								env.imagestream = imagestream
+								env.repository = imagestream.object().status.dockerImageRepository
+								env.registry = env.repository.split("/")[0]
+								echo "API image repo: ${env.repository}"
+							}
+						}
+					}
 				}
 			}
 		}
@@ -116,41 +40,66 @@ spec:
 				}
 			}
    	}
-		stage('Build Images'){
+		stage('Build Image'){
 			environment{
-				DESTINATION="${params.imageRepository}"
-				TAG="${tag}"
-				CLOUD="${params.cloudName}"
+				REGISTRY="${env.registry}"
+				REPOSITORY="${env.repository}"
+				TAG="${env.tag}"
 			}
 			steps{
-				container('docker'){
-					sh '''#!/bin/sh
-								echo "Building $DESTINATION with user $(whoami)"
-                docker login -u $(whoami) -p $(cat /var/run/secrets/kubernetes.io/serviceaccount/token) $DESTINATION
-								docker build -t $DESTINATION:$TAG -t $DESTINATION:latest .
-                docker push $DESTINATION:$TAG
-                docker push $DESTINATION:latest
-                docker build -t $DESTINATION:prepare-configs init/
-                docker push $DESTINATION:prepare-configs
-						 '''
+				container('kaniko'){
+					sh 	'''#!/busybox/sh
+								mkdir -pv /kaniko/.docker
+								echo "{\\"auths\\":{\\"$REGISTRY\\":{\\"username\\":\\"openshift\\",\\"password\\":\\"$(cat /var/run/secrets/kubernetes.io/serviceaccount/token)\\"}}}" | tee /kaniko/.docker/config.json
+								echo "Building $REPOSITORY"
+								/kaniko/executor --context="dir://`pwd`" --destination=$REPOSITORY:$TAG --cache=true --cache-ttl=24h
+						'''
 				}
 			}
 		}
 		stage('Deploy Image on Openshift'){
-			environment{
-				REPOSITORY="${params.imageRepository}"
-				TAG="${tag}"
-			}
 			steps{
 				container('origin'){
           script{
             openshift.withCluster(){
               openshift.withProject(){
-                def deployment = openshift.selector('dc',[template: 'calculadora-api', app: 'api'])
+                def applicationName = !params.appOverride? "calculadora":params.appOverride
+                def deployment = openshift.selector('dc',[template: 'calculadora-api', app: applicationName])
                 if(!deployment.exists()){
-                  def model = openshift.process('-f','templates/template.yaml',"-p","NAME=api")
-                  openshift.apply(model)
-                  deployment = openshift.selector('dc',[template: 'calculadora-api', app: 'api'])
+                  echo "Deploying application component: api, with Application name: ${applicationName}..."
+                  openshift.apply(openshift.process("-f","templates/template.yaml","-p=APP=${applicationName}","-p=IMAGE=${params.app}-api"))
+                  deployment = openshift.selector('dc',[template: 'calculadora-api', app: applicationName])
+                }
+								// get db service
+								def dbService =  openshift.selector('svc',[template: 'calculadora-db', app: applicationName])
+								if(dbService.exists()){
+									deployment.spec.template.initContainers.each{ i,container ->
+										if(container.name == 'prepare-configs'){
+											deployment.spec.template.initContainers[i].envs.each{j,env ->
+												if(env.name='DB_SERVICE_NAME'){
+													deployment.spec.template.initContainers[i].envs[j].value = dbService.metadata.name
+												}
+												elseif(env.name='DB_PASSWORD'){
+													deployment.spec.template.initContainers[i].envs[j].remove("value")
+													deployment.spec.template.initContainers[i].envs[j].valueFrom.secretKeyRef = [name: dbService.metadata.name, key: 'password']
+												}
+												elseif(env.name='DB_NAME'){
+													deployment.spec.template.initContainers[i].envs[j].remove("value")
+													deployment.spec.template.initContainers[i].envs[j].valueFrom.configMapKeyRef = [name: dbService.metadata.name, key: 'dbname']
+												}
+											}
+										}
+									}
+								}
+                def latestVersion = deployment.object().status.latestVersion
+                def deploymentName = deployment.object().metadata.name
+                echo "Checking application component status: ${latestVersion}..."
+                def rc = openshift.selector('rc',"${deploymentName}-${latestVersion}")
+                timeout(time:10, unit: 'MINUTES'){
+                  rc.untilEach(1){
+                    def rcMap = it.object()
+                    return (rcMap.status.replicas.equals(rcMap.status.readyReplicas))
+                  }
                 }
               }
             }
