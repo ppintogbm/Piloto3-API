@@ -76,14 +76,14 @@ pipeline{
 									deployment.spec.template.initContainers.each{ i,container ->
 										if(container.name == 'prepare-configs'){
 											deployment.spec.template.initContainers[i].envs.each{j,env ->
-												if(env.name='DB_SERVICE_NAME'){
+												if(env.name == 'DB_SERVICE_NAME'){
 													deployment.spec.template.initContainers[i].envs[j].value = dbService.metadata.name
 												}
-												elseif(env.name='DB_PASSWORD'){
+												elseif(env.name == 'DB_PASSWORD'){
 													deployment.spec.template.initContainers[i].envs[j].remove("value")
 													deployment.spec.template.initContainers[i].envs[j].valueFrom.secretKeyRef = [name: dbService.metadata.name, key: 'password']
 												}
-												elseif(env.name='DB_NAME'){
+												elseif(env.name == 'DB_NAME'){
 													deployment.spec.template.initContainers[i].envs[j].remove("value")
 													deployment.spec.template.initContainers[i].envs[j].valueFrom.configMapKeyRef = [name: dbService.metadata.name, key: 'dbname']
 												}
