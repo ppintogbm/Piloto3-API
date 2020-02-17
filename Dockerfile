@@ -10,7 +10,7 @@ RUN		chown -R aceuser:mqbrkrs bars/; \
 		 	chown aceuser:mqbrkrs db2jcc-db2jcc4.jar;
 
 #Deploy compiled bar 
-USER	aceuser
-RUN  	"$(id -un):$(id -gn)\($(id -u):$(id -g)\)" &&\
+USER	aceuser:mqbrkrs
+RUN  	"echo '$(id -un):$(id -gn)\($(id -u):$(id -g)\)'" &&\
 			ls -la bars/ && \
     	ace_compile_bars.sh
