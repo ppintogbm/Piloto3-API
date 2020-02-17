@@ -62,11 +62,17 @@ objects:
             - name: prepare-configs
               env:
                 - name: DB_PASSWORD
-                  value: "passw0rd"
+                  valueFrom:
+                    secretKeyRef:
+                      name: ${APP}-db
+                      key: password
                 - name: DB_SERVICE_NAME
-                  value: "db"
+                  value: ${APP}-db
                 - name: DB_NAME
-                  value: "TEST"
+                  valueFrom:
+                    configMapKeyRef:
+                      name: ${APP}-db
+                      key: dbname
               image: " "
               imagePullPolicy: "Always"
               volumeMounts:
