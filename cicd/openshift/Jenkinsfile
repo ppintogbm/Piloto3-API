@@ -23,7 +23,7 @@ pipeline{
 								if(!imagestream.exists()){
 									imagestream = openshift.apply([apiVersion: 'v1',kind: 'ImageStream', metadata: [name: "${params.app}-api", labels: [app: "${params.app}" ]]])
 								}
-								env.imagestream = imagestream
+								env.imagestream = imagestream.object()
 								env.repository = imagestream.object().status.dockerImageRepository
 								env.registry = env.repository.split("/")[0]
 								echo "API image repo: ${env.repository}"
@@ -74,23 +74,26 @@ pipeline{
 								// get db service
 								def dbService =  openshift.selector('svc',[template: 'calculadora-db', app: applicationName])
 								if(dbService.exists()){
-									deployment.spec.template.initContainers.each{ i,container ->
+									def dcObject = deployment.object()
+									dcObject.spec.template.initContainers.each{ i,container ->
 										if(container.name == 'prepare-configs'){
-											deployment.spec.template.initContainers[i].envs.each{j,env ->
+											dcObject.spec.template.initContainers[i].envs.each{j,env ->
 												if(env.name == 'DB_SERVICE_NAME'){
-													deployment.spec.template.initContainers[i].envs[j].value = dbService.metadata.name
+													dcObject.spec.template.initContainers[i].envs[j].value = dbService.metadata.name
 												}
 												elseif(env.name == 'DB_PASSWORD'){
-													deployment.spec.template.initContainers[i].envs[j].remove("value")
-													deployment.spec.template.initContainers[i].envs[j].valueFrom.secretKeyRef = [name: dbService.metadata.name, key: 'password']
+													dcObject.spec.template.initContainers[i].envs[j].remove("value")
+													dcObject.spec.template.initContainers[i].envs[j].valueFrom.secretKeyRef = [name: dbService.metadata.name, key: 'password']
 												}
 												elseif(env.name == 'DB_NAME'){
-													deployment.spec.template.initContainers[i].envs[j].remove("value")
-													deployment.spec.template.initContainers[i].envs[j].valueFrom.configMapKeyRef = [name: dbService.metadata.name, key: 'dbname']
+													dcObject.spec.template.initContainers[i].envs[j].remove("value")
+													dcObject.spec.template.initContainers[i].envs[j].valueFrom.configMapKeyRef = [name: dbService.metadata.name, key: 'dbname']
 												}
 											}
 										}
 									}
+									openshift.apply(dcObject)
+									deployment = openshift.selector('dc',[template: 'calculadora-api', app: applicationName])
 								}
 								openshift.tag("${env.imagestream.metadata.name}:${env.tag}","${env.imagestream.metadata.name}:latest")
 								openshift.tag("${env.imagestream.metadata.name}-init:${env.tag}","${env.imagestream.metadata.name}-init:latest")
