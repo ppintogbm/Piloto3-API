@@ -74,20 +74,22 @@ pipeline{
 								// get db service
 								def dbService =  openshift.selector('svc',[template: 'calculadora-db', app: applicationName])
 								if(dbService.exists()){
+									dbService.Object.dump()
+									def dbServiceName = dbService.object().metadata.name
 									def dcObject = deployment.object()
 									dcObject.spec.template.initContainers.each{ i,container ->
 										if(container.name == 'prepare-configs'){
 											dcObject.spec.template.initContainers[i].envs.each{j,env ->
 												if(env.name == 'DB_SERVICE_NAME'){
-													dcObject.spec.template.initContainers[i].envs[j].value = dbService.object().metadata.name
+													dcObject.spec.template.initContainers[i].envs[j].value = dbServiceName
 												}
 												elseif(env.name == 'DB_PASSWORD'){
 													dcObject.spec.template.initContainers[i].envs[j].remove("value")
-													dcObject.spec.template.initContainers[i].envs[j].valueFrom.secretKeyRef = [name: dbService.object().metadata.name, key: 'password']
+													dcObject.spec.template.initContainers[i].envs[j].valueFrom.secretKeyRef = [name: dbServiceName, key: 'password']
 												}
 												elseif(env.name == 'DB_NAME'){
 													dcObject.spec.template.initContainers[i].envs[j].remove("value")
-													dcObject.spec.template.initContainers[i].envs[j].valueFrom.configMapKeyRef = [name: dbService.object().metadata.name, key: 'dbname']
+													dcObject.spec.template.initContainers[i].envs[j].valueFrom.configMapKeyRef = [name: dbServiceName, key: 'dbname']
 												}
 											}
 										}
