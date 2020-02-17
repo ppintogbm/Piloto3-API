@@ -74,7 +74,7 @@ pipeline{
 								// get db service
 								def dbService =  openshift.selector('svc',[template: 'calculadora-db', app: applicationName])
 								if(dbService.exists()){
-									dbService.Object.dump()
+									dbService.object().dump()
 									def dbServiceName = dbService.object().metadata.name
 									def dcObject = deployment.object()
 									dcObject.spec.template.initContainers.each{ i,container ->
