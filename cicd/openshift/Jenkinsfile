@@ -69,10 +69,11 @@ pipeline{
                 if(!deployment.exists()){
                   echo "Deploying application component: api, with Application name: ${applicationName}..."
                   openshift.apply(openshift.process("-f","templates/template.yaml","-p=APP=${applicationName}","-p=IMAGE=${params.app}-api","-p=NAMESPACE=${openshift.project()}"))
-                  deployment = openshift.selector('dc',[template: 'calculadora-api', app: applicationName,release: 'canary'])
+                  deployment = openshift.selector('dc',[template: 'calculadora-api', app: applicationName, release: 'canary'])
                 }
 								echo "Tagging ${env.repository.split('/')[2]}:${env.tag} as ${env.repository.split('/')[2]}:canary"
 								openshift.tag("${env.repository.split('/')[2]}:${env.tag}","${env.repository.split('/')[2]}:canary");
+								openshift.tag("${env.repository.split('/')[2]}-init:${env.tag}","${env.repository.split('/')[2]}-init:canary");
                 def latestVersion = deployment.object().status.latestVersion
                 def deploymentName = deployment.object().metadata.name
                 echo "Checking application component status: ${latestVersion}..."

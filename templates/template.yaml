@@ -40,6 +40,8 @@ objects:
     apiVersion: v1
     metadata:
       name: ${APP}-${NAME}-prod
+      labels:
+        release: prod
     spec:
       replicas: 1
       selector:
@@ -160,6 +162,8 @@ objects:
     apiVersion: v1
     metadata:
       name: ${APP}-${NAME}-canary
+      labels:
+        release: prod
     spec:
       replicas: 1
       selector:
