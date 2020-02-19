@@ -55,6 +55,8 @@ objects:
             version: "1.0"
             app: ${APP}
             release: prod
+          annotations:
+            sidecar.istio.io/inject: "true"
         spec:
           serviceAccount: ${SA}
           volumes:
@@ -173,6 +175,8 @@ objects:
             version: "1.0"
             app: ${APP}
             release: canary
+          annotations:
+            sidecar.istio.io/inject: "true"
         spec:
           serviceAccount: ${SA}
           volumes:
