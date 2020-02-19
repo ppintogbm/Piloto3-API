@@ -1,20 +1,17 @@
-apiVersion: build.openshift.io/v1
+apiVersion: v1
 kind: BuildConfig
 metadata:
-  name: api-pipeline
+  name: calculadora-api-pipeline
 spec:
-  runPolicy: Serial
-  source:
-    type: Git
-    git:
-      uri: https://github.com/ppintogbm/Piloto3-API.git
-      ref: Dev
   strategy:
     jenkinsPipelineStrategy:
-      jenkinsfilePath: cicd/openshift/Jenkinsfile
       env:
-      - name: imageRepository
-        value: docker-registry.default.svc.cluster.local:5000/piloto3/api
-      - name: jenkinsDockerSecret
-        value: jenkins-dockercfg-lxlss
-    type: JenkinsPipeline
+        - name: app
+          value: calculadora
+      jenkinsfilePath: cicd/openshift/Jenkinsfile
+      type: JenkinsPipeline
+  source:
+    git: 
+      ref: Istio-tests
+      uri: https://github.com/ppintogbm/Piloto3-API.git
+    type: Git

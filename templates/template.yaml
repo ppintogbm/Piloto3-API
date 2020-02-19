@@ -8,6 +8,7 @@ labels:
   template: calculadora-api
   version: "1.0"
   app: ${APP}
+  release: ${NAME}
 parameters:
   - description: Application deployment name
     displayName: Application
@@ -38,19 +39,21 @@ objects:
   - kind: DeploymentConfig
     apiVersion: v1
     metadata:
-      name: ${APP}-${NAME}
+      name: ${APP}-${NAME}-prod
     spec:
       replicas: 1
       selector:
         template: calculadora-api
         version: "1.0"
         app: ${APP}
+        release: prod
       template:
         metadata:
           labels:
             template: calculadora-api
             version: "1.0"
             app: ${APP}
+            release: prod
         spec:
           serviceAccount: ${SA}
           volumes:
@@ -149,6 +152,124 @@ objects:
             from:
               kind: ImageStreamTag
               name: ${IMAGE}-init:latest
+              namespace: ${NAMESPACE}
+        - type: ConfigChange
+  - kind: DeploymentConfig
+    apiVersion: v1
+    metadata:
+      name: ${APP}-${NAME}-canary
+    spec:
+      replicas: 1
+      selector:
+        template: calculadora-api
+        version: "1.0"
+        app: ${APP}
+        release: canary
+      template:
+        metadata:
+          labels:
+            template: calculadora-api
+            version: "1.0"
+            app: ${APP}
+            release: canary
+        spec:
+          serviceAccount: ${SA}
+          volumes:
+            - name: ace-policies
+              emptyDir: {}
+            - name: ace-setdbparms
+              emptyDir: {}
+          initContainers:
+            - name: prepare-configs
+              env:
+                - name: DB_PASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      name: ${APP}-db
+                      key: password
+                - name: DB_SERVICE_NAME
+                  value: ${APP}-db
+                - name: DB_NAME
+                  valueFrom:
+                    configMapKeyRef:
+                      name: ${APP}-db
+                      key: dbname
+              image: " "
+              imagePullPolicy: "Always"
+              volumeMounts:
+                - name: ace-policies
+                  mountPath: /policy
+                - name: ace-setdbparms
+                  mountPath: /setdbparms
+              
+          containers:
+            - name: ace
+              env:
+                - name: LICENSE 
+                  value: accept
+              image: " "
+              imagePullPolicy: "Always"
+              ports:
+                - containerPort: 7600
+                  protocol: TCP
+                - containerPort: 7800
+                  protocol: TCP
+                - containerPort: 7843
+                  protocol: TCP
+                - containerPort: 9483
+                  protocol: TCP
+              livenessProbe:
+                exec:
+                  command:
+                  - chkacehealthy
+              readinessProbe:
+                exec:
+                  command:
+                  - chkaceready
+              volumeMounts:
+                - name: ace-policies
+                  mountPath: /home/aceuser/initial-config/policy
+                - name: ace-setdbparms
+                  mountPath: /home/aceuser/initial-config/setdbparms
+              securityContext:
+                allowPrivilegeEscalation: false
+                readOnlyRootFilesystem: false
+                runAsNonRoot: true
+                runAsUser: 1000
+                privileged: false
+                capabilities:
+                  add:
+                  - SETPCAP
+                  - AUDIT_WRITE
+                  - CHOWN
+                  - NET_RAW
+                  - DAC_OVERRIDE
+                  - FOWNER
+                  - FSETID
+                  - KILL
+                  - SETUID
+                  - SETGID
+                  - NET_BIND_SERVICE
+                  - SYS_CHROOT
+                  - SETFCAP
+      triggers:
+        - type: ImageChange
+          imageChangeParams:
+            containerNames:
+              - ace
+            automatic: true
+            from:
+              kind: ImageStreamTag
+              name: ${IMAGE}:canary
+              namespace: ${NAMESPACE}
+        - type: ImageChange
+          imageChangeParams:
+            containerNames:
+              - prepare-configs
+            automatic: false
+            from:
+              kind: ImageStreamTag
+              name: ${IMAGE}-init:canary
               namespace: ${NAMESPACE}
         - type: ConfigChange
   - kind: Service
