@@ -4,10 +4,6 @@ metadata:
   labels: 
     app: jenkins-ephemeral
 spec:
-  volumes:
-    - name: kaniko-cache
-      persistentVolumeClaim:
-          claimName: kaniko-cache
   serviceAccount: jenkins
   containers:
     - name: origin
@@ -42,9 +38,6 @@ spec:
         limits:
           cpu: "2000m"
           memory: "2048Mi"
-      volumeMounts:
-        - name: kaniko-cache
-          mountPath: /cache
     - name: ace
       image: ibmcom/ace
       command: 
