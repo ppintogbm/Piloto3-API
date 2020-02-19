@@ -8,6 +8,7 @@ labels:
   template: calculadora-api
   version: "1.0"
   app: ${APP}
+  component: api
   release: ${NAME}
 parameters:
   - description: Application deployment name

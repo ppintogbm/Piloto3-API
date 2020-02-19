@@ -52,8 +52,8 @@ pipeline{
 								mkdir -pv /kaniko/.docker
 								echo "{\\"auths\\":{\\"$REGISTRY\\":{\\"username\\":\\"openshift\\",\\"password\\":\\"$(cat /var/run/secrets/kubernetes.io/serviceaccount/token)\\"}}}" | tee /kaniko/.docker/config.json
 								echo "Building $REPOSITORY"
-								/kaniko/executor --context="dir://`pwd`" --destination=$REPOSITORY:$TAG --destination=$REPOSITORY:canary --cleanup --cache=true --cache-ttl=24h --cache-repo=$REPOSITORY-cache
-								/kaniko/executor --context="dir://`pwd`/init" --dockerfile="`pwd`/init/Dockerfile" --destination=$REPOSITORY-init:$TAG --destination=$REPOSITORY-init:canary --cleanup --cache=true --cache-ttl=24h --cache-repo=$REPOSITORY-init-cache
+								/kaniko/executor --context="dir://`pwd`" --destination=$REPOSITORY:$TAG --cleanup --cache=true --cache-ttl=24h --cache-repo=$REPOSITORY-cache
+								/kaniko/executor --context="dir://`pwd`/init" --dockerfile="`pwd`/init/Dockerfile" --destination=$REPOSITORY-init:$TAG --cleanup --cache=true --cache-ttl=24h --cache-repo=$REPOSITORY-init-cache
 						'''
 				}
 			}
@@ -69,9 +69,9 @@ pipeline{
                 if(!deployment.exists()){
                   echo "Deploying application component: api, with Application name: ${applicationName}..."
                   openshift.apply(openshift.process("-f","templates/template.yaml","-p=APP=${applicationName}","-p=IMAGE=${params.app}-api","-p=NAMESPACE=${openshift.project()}"))
-                  deployment = openshift.selector('dc',[template: 'calculadora-api', app: applicationName])
+                  deployment = openshift.selector('dc',[template: 'calculadora-api', app: applicationName],release: 'canary')
                 }
-								/*
+								openshift.tag("${env.repository.split('/')[2]}:${env.tag}","${env.repository.split('/')[2]}:canary");
                 def latestVersion = deployment.object().status.latestVersion
                 def deploymentName = deployment.object().metadata.name
                 echo "Checking application component status: ${latestVersion}..."
@@ -82,7 +82,6 @@ pipeline{
                     return (rcMap.status.replicas.equals(rcMap.status.readyReplicas))
                   }
                 }
-								*/
               }
             }
           }
