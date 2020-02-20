@@ -151,7 +151,7 @@ objects:
           imageChangeParams:
             containerNames:
               - prepare-configs
-            automatic: false
+            automatic: true
             from:
               kind: ImageStreamTag
               name: ${IMAGE}-init:latest
@@ -273,7 +273,7 @@ objects:
           imageChangeParams:
             containerNames:
               - prepare-configs
-            automatic: false
+            automatic: true
             from:
               kind: ImageStreamTag
               name: ${IMAGE}-init:canary
