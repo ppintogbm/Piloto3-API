@@ -150,7 +150,7 @@ pipeline{
 			input{
 				message "Promote to canary to prod?"
 				parameters{
-					booleanParam(name: 'promote',defaultValue: false, description 'Promote to canary release to prod')
+					booleanParam(name: 'promote',defaultValue: false, description: 'Promote to canary release to prod')
 				}
 			}
 			steps{
