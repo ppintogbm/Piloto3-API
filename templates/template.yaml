@@ -6,7 +6,7 @@ metadata:
   tags: ibmcom/ace
 labels:
   template: calculadora-api
-  app: ${APP}
+  app: ${APP}-api
   component: api
 parameters:
   - description: Application deployment name
@@ -46,14 +46,14 @@ objects:
       selector:
         template: calculadora-api
         version: "1.0"
-        app: ${APP}
+        app: ${APP}-api
         version: prod
       template:
         metadata:
           labels:
             template: calculadora-api
             version: "1.0"
-            app: ${APP}
+            app: ${APP}-api
             version: prod
           annotations:
             sidecar.istio.io/inject: "true"
@@ -168,14 +168,14 @@ objects:
       selector:
         template: calculadora-api
         version: "1.0"
-        app: ${APP}
+        app: ${APP}-api
         version: canary
       template:
         metadata:
           labels:
             template: calculadora-api
             version: "1.0"
-            app: ${APP}
+            app: ${APP}-api
             version: canary
           annotations:
             sidecar.istio.io/inject: "true"
@@ -284,12 +284,12 @@ objects:
     metadata:
       name: ${APP}-${NAME}
     labels:
-      app: ${APP}
+      app: ${APP}-api
     spec:
       selector:
         template: calculadora-api
         version: "1.0"
-        app: ${APP}
+        app: ${APP}-api
       type: ClusterIP
       ports:
         - port: 7600
