@@ -65,11 +65,11 @@ pipeline{
             openshift.withCluster(){
               openshift.withProject(){
                 def applicationName = !params.appOverride? "calculadora":params.appOverride
-                def deployment = openshift.selector('dc',[app: "${applicationName}-api",version: 'canary'])
+                def deployment = openshift.selector('dc',"${app}-api-canary")
                 if(!deployment.exists()){
                   echo "Deploying application component: api, with Application name: ${applicationName}..."
                   openshift.apply(openshift.process("-f","templates/template.yaml","-p=APP=${applicationName}","-p=IMAGE=${params.app}-api","-p=NAMESPACE=${openshift.project()}"))
-                  deployment = openshift.selector('dc',[app: "${applicationName}-api", version: 'canary'])
+                  deployment = openshift.selector('dc',"${app}-api-canary")
                 }
 								echo "Tagging ${env.repository.split('/')[2]}:${env.tag} as ${env.repository.split('/')[2]}:canary"
 								openshift.tag("${env.repository.split('/')[2]}:${env.tag}","${env.repository.split('/')[2]}:canary");

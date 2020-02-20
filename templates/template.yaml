@@ -6,6 +6,7 @@ metadata:
   tags: ibmcom/ace
 labels:
   template: calculadora-api
+  template-version: '1.0'
   app: ${APP}-api
   component: api
 parameters:
@@ -44,10 +45,7 @@ objects:
     spec:
       replicas: 1
       selector:
-        template: calculadora-api
-        version: "1.0"
         app: ${APP}-api
-        version: prod
       template:
         metadata:
           labels:
@@ -166,10 +164,7 @@ objects:
     spec:
       replicas: 1
       selector:
-        template: calculadora-api
-        version: "1.0"
         app: ${APP}-api
-        version: canary
       template:
         metadata:
           labels:
@@ -287,8 +282,6 @@ objects:
       app: ${APP}-api
     spec:
       selector:
-        template: calculadora-api
-        version: "1.0"
         app: ${APP}-api
       type: ClusterIP
       ports:
