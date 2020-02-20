@@ -120,12 +120,20 @@ pipeline{
 			}
 		}
 		stage("Enable Canary Release"){
+			when{
+				expression{
+						return !env.exit;
+				}
+			}
 			steps{
 				container('origin'){
 					script{
 						openshift.withCluster(){
 							openshift.withProject(env.project){
-								//TODO
+								def vs = openshift.selector('vs',"${env.app}-api").object()
+								vs.spec.http[0].route[0].weight=50
+								vs.spec.http[0].route[1].weight=50
+								openshift.apply(vs)
 							}
 						}
 					}
