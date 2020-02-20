@@ -293,3 +293,40 @@ objects:
         - port: 9843
           protocol: TCP
           name: tcp-9843
+  - kind: VirtualService
+    apiVersion: networking.istio.io/v1alpha3
+    metadata:
+      name: ${APP}-${NAME}
+    spec:
+      hosts:
+        - ${APP}-${NAME}
+      http:
+        - match:
+            - uri: 
+                prefix: /
+          route:
+            - destination:
+                host: ${APP}-${NAME}
+                subset: prod
+                port:
+                  number: 7800
+              weight: 100
+            - destination:
+                host: ${APP}-${NAME}
+                subset: prod
+                port:
+                  number: 7800
+              weight: 0
+  - kind: DestinationRule
+    apiVersion: networking.istio.io/v1alpha3
+    metadata:
+      name: ${APP}-${NAME}
+    spec:
+      host: ${APP}-${NAME}
+      subsets:
+      - name: prod
+        labels:
+          version: prod
+      - name: canary
+        labels:
+          version: canary

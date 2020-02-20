@@ -7,18 +7,21 @@ pipeline{
     }
   }
 	parameters{
-    string(name: "app", description: "Application Name overrides")
+    string(name: "app", description: "Application Name overrides.")
+		string(name: "project", description: "Destination project name.")
 	}
 	stages{
 		stage('Prepare'){
 			steps{
 				script{
 					env.tag = sh(script: 'git rev-parse --short HEAD', returnStdout: true).trim()
+					env.project = !params.project? "${openshift.project()}":params.project
+					env.app = !params.app? "calculadora":params.app
 				}
 				container('origin'){
 					script{
 						openshift.withCluster(){
-							openshift.withProject(){
+							openshift.withProject("${env.project}"){
 								def imagestream = openshift.selector("imagestream/${params.app}-api")
 								if(!imagestream.exists()){
 									imagestream = openshift.apply([apiVersion: 'v1',kind: 'ImageStream', metadata: [name: "${params.app}-api", labels: [app: "${params.app}" ]]])
@@ -63,17 +66,16 @@ pipeline{
 				container('origin'){
           script{
             openshift.withCluster(){
-              openshift.withProject(){
-                def applicationName = !params.appOverride? "calculadora":params.appOverride
-                def deployment = openshift.selector('dc',"${app}-api-canary")
+              openshift.withProject("${env.project}"){
+                def deployment = openshift.selector('dc',"${env.app}-api-canary")
                 if(!deployment.exists()){
-                  echo "Deploying application component: api, with Application name: ${applicationName}..."
-                  openshift.apply(openshift.process("-f","templates/template.yaml","-p=APP=${applicationName}","-p=IMAGE=${params.app}-api","-p=NAMESPACE=${openshift.project()}"))
+                  echo "Deploying application component: api, with Application name: ${env.app}..."
+                  openshift.apply(openshift.process("-f","templates/template.yaml","-p=APP=${env.app}","-p=IMAGE=${params.app}-api","-p=NAMESPACE=${openshift.project()}"))
                   deployment = openshift.selector('dc',"${app}-api-canary")
                 }
 								echo "Tagging ${env.repository.split('/')[2]}:${env.tag} as ${env.repository.split('/')[2]}:canary"
-								openshift.tag("${env.repository.split('/')[2]}:${env.tag}","${env.repository.split('/')[2]}:canary");
 								openshift.tag("${env.repository.split('/')[2]}-init:${env.tag}","${env.repository.split('/')[2]}-init:canary");
+								openshift.tag("${env.repository.split('/')[2]}:${env.tag}","${env.repository.split('/')[2]}:canary");
                 def latestVersion = deployment.object().status.latestVersion
                 def deploymentName = deployment.object().metadata.name
                 echo "Checking application component status: ${latestVersion}..."
@@ -87,6 +89,42 @@ pipeline{
               }
             }
           }
+				}
+			}
+		}
+		stage("First release?"){
+			steps{
+				container('origin'){
+					openshift.withCluster(){
+						openshift.withProject(env.project){
+							def deployment = openshift.selector('dc',"${env.app}-api-prod")
+							if(!deployment.exists()){
+								echo "Something goes wrong with dc/${env.app}-api-prod"
+								currentBuild.result = 'FAILURE'
+								env.exit = true
+								return
+							}
+							def latestVersion = deployment.object().status.latestVersion
+							echo "Checking application component status: ${latestVersion}..."
+							if(!latestVersion){
+								echo "Tagging ${env.repository.split('/')[2]}:${env.tag} as ${env.repository.split('/')[2]}:latest"
+								openshift.tag("${env.repository.split('/')[2]}:${env.tag}","${env.repository.split('/')[2]}:latest");
+								openshift.tag("${env.repository.split('/')[2]}-init:${env.tag}","${env.repository.split('/')[2]}-init:latest");
+								env.exit = true
+							}
+						}
+					}
+				}
+			}
+		}
+		stage("Enable Canary Release"){
+			steps{
+				container('origin'){
+					openshift.withCluster(){
+						openshift.withProject(env.project){
+							//TODO
+						}
+					}
 				}
 			}
 		}

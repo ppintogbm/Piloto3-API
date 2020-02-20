@@ -8,6 +8,8 @@ spec:
       env:
         - name: app
           value: calculadora
+        - name: project
+          value: piloto3
       jenkinsfilePath: cicd/openshift/Jenkinsfile
       type: JenkinsPipeline
   source:
