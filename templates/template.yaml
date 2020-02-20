@@ -6,7 +6,6 @@ metadata:
   tags: ibmcom/ace
 labels:
   template: calculadora-api
-  version: "1.0"
   app: ${APP}
   component: api
 parameters:
@@ -41,21 +40,21 @@ objects:
     metadata:
       name: ${APP}-${NAME}-prod
       labels:
-        release: prod
+        version: prod
     spec:
       replicas: 1
       selector:
         template: calculadora-api
         version: "1.0"
         app: ${APP}
-        release: prod
+        version: prod
       template:
         metadata:
           labels:
             template: calculadora-api
             version: "1.0"
             app: ${APP}
-            release: prod
+            version: prod
           annotations:
             sidecar.istio.io/inject: "true"
         spec:
@@ -163,21 +162,21 @@ objects:
     metadata:
       name: ${APP}-${NAME}-canary
       labels:
-        release: prod
+        version: prod
     spec:
       replicas: 1
       selector:
         template: calculadora-api
         version: "1.0"
         app: ${APP}
-        release: canary
+        version: canary
       template:
         metadata:
           labels:
             template: calculadora-api
             version: "1.0"
             app: ${APP}
-            release: canary
+            version: canary
           annotations:
             sidecar.istio.io/inject: "true"
         spec:
