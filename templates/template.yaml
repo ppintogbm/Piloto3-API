@@ -287,13 +287,13 @@ objects:
       ports:
         - port: 7600
           protocol: TCP
-          name: 7600-tcp
+          name: http-7600
         - port: 7800
           protocol: TCP
-          name: 7800-tcp
+          name: http-7800
         - port: 7843
           protocol: TCP
-          name: 7843-tcp
+          name: https-7843
         - port: 9843
           protocol: TCP
-          name: 9843-tcp
+          name: tcp-9843
