@@ -95,22 +95,24 @@ pipeline{
 		stage("First release?"){
 			steps{
 				container('origin'){
-					openshift.withCluster(){
-						openshift.withProject(env.project){
-							def deployment = openshift.selector('dc',"${env.app}-api-prod")
-							if(!deployment.exists()){
-								echo "Something goes wrong with dc/${env.app}-api-prod"
-								currentBuild.result = 'FAILURE'
-								env.exit = true
-								return
-							}
-							def latestVersion = deployment.object().status.latestVersion
-							echo "Checking application component status: ${latestVersion}..."
-							if(!latestVersion){
-								echo "Tagging ${env.repository.split('/')[2]}:${env.tag} as ${env.repository.split('/')[2]}:latest"
-								openshift.tag("${env.repository.split('/')[2]}:${env.tag}","${env.repository.split('/')[2]}:latest");
-								openshift.tag("${env.repository.split('/')[2]}-init:${env.tag}","${env.repository.split('/')[2]}-init:latest");
-								env.exit = true
+					script{
+						openshift.withCluster(){
+							openshift.withProject(env.project){
+								def deployment = openshift.selector('dc',"${env.app}-api-prod")
+								if(!deployment.exists()){
+									echo "Something goes wrong with dc/${env.app}-api-prod"
+									currentBuild.result = 'FAILURE'
+									env.exit = true
+									return
+								}
+								def latestVersion = deployment.object().status.latestVersion
+								echo "Checking application component status: ${latestVersion}..."
+								if(!latestVersion){
+									echo "Tagging ${env.repository.split('/')[2]}:${env.tag} as ${env.repository.split('/')[2]}:latest"
+									openshift.tag("${env.repository.split('/')[2]}:${env.tag}","${env.repository.split('/')[2]}:latest");
+									openshift.tag("${env.repository.split('/')[2]}-init:${env.tag}","${env.repository.split('/')[2]}-init:latest");
+									env.exit = true
+								}
 							}
 						}
 					}
@@ -120,9 +122,11 @@ pipeline{
 		stage("Enable Canary Release"){
 			steps{
 				container('origin'){
-					openshift.withCluster(){
-						openshift.withProject(env.project){
-							//TODO
+					script{
+						openshift.withCluster(){
+							openshift.withProject(env.project){
+								//TODO
+							}
 						}
 					}
 				}
