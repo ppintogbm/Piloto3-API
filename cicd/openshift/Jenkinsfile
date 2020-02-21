@@ -148,12 +148,7 @@ pipeline{
 				}
 			}
 			steps{
-				def promote = input(
-					message: "Promote canary to prod?",
-					parameters: [
-						booleanParam(name: 'promote',defaultValue: true, description: 'Promote to canary release to prod')
-					]
-				)
+				def promote = input message: 'Promote canary to prod?', parameters: [booleanParam(defaultValue: true, description: '', name: 'promote')]
 				container('origin'){
 					script{
 						openshift.withCluster(){
