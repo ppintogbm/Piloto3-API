@@ -141,19 +141,19 @@ pipeline{
 				}
 			}
 		}
-		stage("Promote?"){
+		stage("Promote%3F"){
 			when{
 				expression{
 						return !env.exit;
 				}
 			}
-			input{
-				message "Promote to canary to prod?"
-				parameters{
-					booleanParam(name: 'promote',defaultValue: false, description: 'Promote to canary release to prod')
-				}
-			}
 			steps{
+				def promote = input{
+					message: "Promote canary to prod?",
+					parameters: {
+						booleanParam(name: 'promote',defaultValue: true, description: 'Promote to canary release to prod')
+					}
+				}
 				container('origin'){
 					script{
 						openshift.withCluster(){
