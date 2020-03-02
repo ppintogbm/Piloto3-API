@@ -313,7 +313,7 @@ objects:
               weight: 100
             - destination:
                 host: ${APP}-${NAME}
-                subset: prod
+                subset: canary
                 port:
                   number: 7800
               weight: 0
