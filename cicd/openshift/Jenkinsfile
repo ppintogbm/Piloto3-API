@@ -176,8 +176,9 @@ pipeline{
 					}
 				}
 			}
-			post{
-				aborted{
+		}
+		post{
+				always{
 					steps{
 						container('origin'){
 							script{
@@ -195,6 +196,5 @@ pipeline{
 					}
 				}
 			}
-		}
 	}
 }
