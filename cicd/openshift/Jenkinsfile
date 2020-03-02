@@ -181,12 +181,14 @@ pipeline{
 					steps{
 						container('origin'){
 							openshift.withCluster(){
-								openshift.withProject(env.project){
-									echo "Disabling canary..."
-									def vs = openshift.selector('vs',"${env.app}-api").object()
-									vs.spec.http[0].route[0].weight=100
-									vs.spec.http[0].route[1].weight=0
-									openshift.apply(vs)
+								script{
+									openshift.withProject(env.project){
+										echo "Disabling canary..."
+										def vs = openshift.selector('vs',"${env.app}-api").object()
+										vs.spec.http[0].route[0].weight=100
+										vs.spec.http[0].route[1].weight=0
+										openshift.apply(vs)
+									}
 								}
 							}
 						}
