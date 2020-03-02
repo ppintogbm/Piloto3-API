@@ -180,8 +180,8 @@ pipeline{
 				aborted{
 					steps{
 						container('origin'){
-							openshift.withCluster(){
-								script{
+							script{
+								openshift.withCluster(){
 									openshift.withProject(env.project){
 										echo "Disabling canary..."
 										def vs = openshift.selector('vs',"${env.app}-api").object()
