@@ -131,7 +131,7 @@ pipeline{
 				container('origin'){
 					script{
 						openshift.withCluster(){
-							openshift.withProject(env.project){
+							openshift.withProject("${env.project}"){
 								echo "Enabling canary..."
 								def vs = openshift.selector('vs',"${env.app}-api").object()
 								vs.spec.http[0].route[0].weight=50
