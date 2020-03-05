@@ -150,15 +150,15 @@ objects:
               kind: ImageStreamTag
               name: ${IMAGE}:latest
               namespace: ${NAMESPACE}
-        - type: ImageChange
-          imageChangeParams:
-            containerNames:
-              - prepare-configs
-            automatic: false
-            from:
-              kind: ImageStreamTag
-              name: ${IMAGE}-init:latest
-              namespace: ${NAMESPACE}
+        # - type: ImageChange
+        #   imageChangeParams:
+        #     containerNames:
+        #       - prepare-configs
+        #     automatic: false
+        #     from:
+        #       kind: ImageStreamTag
+        #       name: ${IMAGE}-init:latest
+        #       namespace: ${NAMESPACE}
         - type: ConfigChange
   - kind: DeploymentConfig
     apiVersion: v1
@@ -274,15 +274,15 @@ objects:
               kind: ImageStreamTag
               name: ${IMAGE}:canary
               namespace: ${NAMESPACE}
-        - type: ImageChange
-          imageChangeParams:
-            containerNames:
-              - prepare-configs
-            automatic: false
-            from:
-              kind: ImageStreamTag
-              name: ${IMAGE}-init:canary
-              namespace: ${NAMESPACE}
+        # - type: ImageChange
+        #   imageChangeParams:
+        #     containerNames:
+        #       - prepare-configs
+        #     automatic: false
+        #     from:
+        #       kind: ImageStreamTag
+        #       name: ${IMAGE}-init:canary
+        #       namespace: ${NAMESPACE}
         - type: ConfigChange
   - kind: Service
     apiVersion: v1
