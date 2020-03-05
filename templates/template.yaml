@@ -136,10 +136,10 @@ objects:
               resources:
                 requests:
                   cpu: 500m
-                  memory: 128MiB
+                  memory: 128Mi
                 limits:
                   cpu: 2000m
-                  memory: 1024Mib    
+                  memory: 1024Mi    
       triggers:
         - type: ImageChange
           imageChangeParams:
@@ -260,10 +260,10 @@ objects:
               resources:
                 requests:
                   cpu: 500m
-                  memory: 128MiB
+                  memory: 128Mi
                 limits:
                   cpu: 2000m
-                  memory: 1024Mib
+                  memory: 1024Mi
       triggers:
         - type: ImageChange
           imageChangeParams:
