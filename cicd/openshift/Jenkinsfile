@@ -55,8 +55,8 @@ pipeline{
 								mkdir -pv /kaniko/.docker
 								echo "{\\"auths\\":{\\"$REGISTRY\\":{\\"username\\":\\"openshift\\",\\"password\\":\\"$(cat /var/run/secrets/kubernetes.io/serviceaccount/token)\\"}}}" | tee /kaniko/.docker/config.json
 								echo "Building $REPOSITORY"
-								/kaniko/executor --context="dir://`pwd`" --destination=$REPOSITORY:$TAG --cleanup --cache=true --cache-ttl=24h --cache-repo=$REPOSITORY-cache
-								/kaniko/executor --context="dir://`pwd`/init" --dockerfile="`pwd`/init/Dockerfile" --destination=$REPOSITORY-init:$TAG --cleanup --cache=true --cache-ttl=24h --cache-repo=$REPOSITORY-init-cache
+								/kaniko/executor --skip-tls-verify --context="dir://`pwd`" --destination=$REPOSITORY:$TAG --cleanup --cache=true --cache-ttl=24h --cache-repo=$REPOSITORY-cache
+								/kaniko/executor --skip-tls-verify --context="dir://`pwd`/init" --dockerfile="`pwd`/init/Dockerfile" --destination=$REPOSITORY-init:$TAG --cleanup --cache=true --cache-ttl=24h --cache-repo=$REPOSITORY-init-cache
 						'''
 				}
 			}
